@@ -13,26 +13,44 @@ import Set exposing (Set)
 -- MODEL
 
 
+-- type alias Model =
+--     { count : Int
+--     , pressedKeys : List Key
+--     , visiblePlayers : Set String
+--     , currentChar : String
+--     , dialogueShow : Bool
+--     , dialogue : List String
+--     , stepCount : Int
+--     }
+
+-- "Make impossible states impossible" - Richard Feldman
 type alias Model =
     { count : Int
     , pressedKeys : List Key
     , visiblePlayers : Set String
-    , currentChar : String
-    , dialogueShow : Bool
-    , dialogue : List String
+    , dialogueState : DialogueState
     , stepCount : Int
+    , fadeOutStart : Maybe (String, Int)
     }
 
+type DialogueState
+    = NoDialogue
+    | Dialogue DialogueData
+
+type alias DialogueData =
+    { currentChar : String
+    , dialogue : List String
+    , dialogueStart : Int
+    }
 
 initialModel : Model
 initialModel =
     { count = 0
     , pressedKeys = []
     , visiblePlayers = Set.fromList [ "Os", "Maela" ]
-    , currentChar = ""
-    , dialogueShow = False
-    , dialogue = []
+    , dialogueState = NoDialogue
     , stepCount = 0
+    , fadeOutStart = Nothing
     }
 
 
@@ -42,8 +60,7 @@ initialModel =
 
 type Msg
     = SetDialogue PartyMember
-    | Remove String
-    | DialogueStep Float
+    | Step Float
     | KeyMsg Keyboard.Msg
 
 
@@ -52,18 +69,17 @@ update msg model =
     case msg of
         SetDialogue character ->
             ( { model
-                | dialogue = String.split "\n" character.text
-                , dialogueShow = True
-                , currentChar = character.name
-                , stepCount = 0
+                | dialogueState =
+                    { currentChar = character.name
+                    , dialogue = String.split "\n" character.text
+                    , dialogueStart = model.stepCount
+                    }
+                    |> Dialogue
               }
             , Cmd.none
             )
 
-        Remove name ->
-            ( { model | visiblePlayers = Set.remove name model.visiblePlayers }, Cmd.none )
-
-        DialogueStep time ->
+        Step time ->
             ( step model, Cmd.none )
 
         KeyMsg keyMsg ->
@@ -76,38 +92,77 @@ update msg model =
 
 step model =
     let
-        nextLine =
-            model.stepCount > String.length (getCurrentLine model) && keysDown [ Enter ] model
+        newDialogueState =
+            case model.dialogueState of
+                Dialogue state ->
+                    let
+                        nextLine =
+                            (toFloat (timeElapsed model) / toFloat stepsPerChar |> floor) > String.length (getCurrentLine model) &&
+                            keysDown [ Enter, Character "z" ] model
+                    in
+                    if nextLine && List.length state.dialogue == 0 then
+                        NoDialogue
+                    else
+                        { state
+                            | dialogue =
+                                if nextLine then
+                                    List.tail state.dialogue |> Maybe.withDefault []
+
+                                else
+                                    state.dialogue
+                            , dialogueStart =
+                              if nextLine then
+                                  model.stepCount
+
+                              else
+                                  state.dialogueStart
+                        }
+                        |> Dialogue
+                NoDialogue -> NoDialogue
+
+        fadeDone startStep = model.stepCount - startStep > fadeDuration
     in
     { model
-        | dialogueShow =
-            List.length model.dialogue > 0
-        , dialogue =
-            if nextLine then
-                List.tail model.dialogue |> Maybe.withDefault []
-
-            else
-                model.dialogue
-        , stepCount =
-            if nextLine then
-                0
-
-            else if keysDown [ Spacebar ] model then
+        | stepCount =
+            if keysDown [ Spacebar, Character "x" ] model then
                 model.stepCount + 5
 
             else
                 model.stepCount + 1
-        , visiblePlayers =
-            case model.dialogue of
-                head :: rest -> model.visiblePlayers
+        , dialogueState = newDialogueState
+        , fadeOutStart =
+            case (model.dialogueState, model.fadeOutStart) of
+                (Dialogue state, a) ->
+                    case state.dialogue of
+                        head :: rest -> Nothing
 
-                _ -> Set.remove model.currentChar model.visiblePlayers
+                        _ -> Just (state.currentChar, model.stepCount)
+
+                (NoDialogue, Just (character, startStep)) ->
+                    if fadeDone startStep then
+                        Nothing
+
+                    else
+                        model.fadeOutStart
+
+                _ ->
+                    model.fadeOutStart
+        , visiblePlayers =
+              case model.fadeOutStart of
+                  Just ( character, startStep ) ->
+                      if fadeDone startStep then
+                          Set.remove character model.visiblePlayers
+
+                      else
+                          model.visiblePlayers
+                  Nothing ->
+                      model.visiblePlayers
       }
 
 
 keysDown : List Key -> Model -> Bool
 keysDown keys model =
-    keys |> List.any (\a -> List.member a model.pressedKeys)
+    keys |> List.any (\a -> List.member a model.pressedKeys) |> Debug.log "keysDown"
 
 
 type alias Point =
@@ -130,12 +185,21 @@ px value =
     String.fromInt value ++ "px"
 
 
+timeElapsed : Model -> Int
+timeElapsed model =
+    case model.dialogueState of
+        NoDialogue ->
+            0
+
+        Dialogue dialogueData ->
+            model.stepCount - dialogueData.dialogueStart |> Debug.log "Dialogue Steps Elapsed"
+
+
+stepsPerChar = 2
+
 textToHtml : String -> Int -> Html msg
 textToHtml dialogueLine stepCount =
     let
-        stepsPerChar =
-            2
-
         charsToShow =
             toFloat stepCount / stepsPerChar |> floor
     in
@@ -144,12 +208,37 @@ textToHtml dialogueLine stepCount =
 
 getCurrentLine : Model -> String
 getCurrentLine model =
-    List.head model.dialogue |> Maybe.withDefault ""
+    case model.dialogueState of
+        NoDialogue ->
+            ""
+
+        Dialogue dialogueData ->
+            List.head dialogueData.dialogue |> Maybe.withDefault ""
 
 
 buttonDisable : Model -> Html.Attribute msg
 buttonDisable model =
-    Html.Attributes.disabled model.dialogueShow
+    Html.Attributes.disabled (model.dialogueState /= NoDialogue || model.fadeOutStart /= Nothing)
+
+
+fadeDuration = 100
+
+
+buttonOpacity : Model -> String -> Html.Attribute msg
+buttonOpacity model buttonName =
+    case model.fadeOutStart of
+        Just ( character, startStep ) ->
+            if buttonName == character then
+
+                String.fromFloat ( 1 - toFloat ( model.stepCount - startStep ) / fadeDuration ) |> Html.Attributes.style "opacity"
+            else
+                Html.Attributes.style "opacity" "1"
+
+        Nothing ->
+            Html.Attributes.style "opacity" "1"
+
+
+
 
 
 
@@ -159,11 +248,7 @@ buttonDisable model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ if model.dialogueShow then
-            onAnimationFrameDelta DialogueStep
-
-          else
-            Sub.none
+        [ onAnimationFrameDelta Step
         , Sub.map KeyMsg Keyboard.subscriptions
         ]
 
@@ -187,17 +272,18 @@ view model =
                         , style "top" (px a.pos.y)
                         , style "position" "relative"
                         , buttonDisable model
+                        , buttonOpacity model a.name
                         ]
                         [ text a.name ]
                 )
                 visibleCharacters
 
         dialogueBoxHtml =
-            if model.dialogueShow then
-                [ textToHtml (getCurrentLine model) model.stepCount ]
+            if model.dialogueState == NoDialogue then
+                []
 
             else
-                []
+                [ textToHtml (getCurrentLine model) (timeElapsed model) ]
     in
     div [ style "position" "relative" ]
         (visibleCharacterHtml
@@ -217,21 +303,3 @@ main =
         , update = update
         , subscriptions = subscriptions
         }
-{-
-
-        _     . _ _
-  .  *    ` -*      \
-| *-.               /.
-|       *-,. _      `-\
- \             *-._    \
-.*        /*-        * .\
-|        |   `          |
-|         `- /          /
- *-._                  ||
-      *-._             *\
-           *-._          |
-                *-._     |
-                     *-._*
-
-            CHEESE GROMIT!
--}
