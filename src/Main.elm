@@ -53,15 +53,15 @@ encodeRecord_soundName_String_loop_Bool_ a =
 
 playSound : String -> Bool -> Cmd msg
 playSound soundName loop =
-    Ports.PlaySound { soundName = soundName, loop = loop }
-        |> Json.encodePortOutMsg
-        |> Ports.portOut
+    PlaySound { soundName = soundName, loop = loop }
+        |> encodePortOutMsg
+        |> portOut
 
 stopSound : String -> Cmd msg
 stopSound soundName =
-    Ports.StopSound { soundName = soundName }
-        |> Json.encodePortOutMsg
-        |> Ports.portOut
+    StopSound { soundName = soundName }
+        |> encodePortOutMsg
+        |> portOut
 
 
 -- MODEL
@@ -119,11 +119,19 @@ update msg model =
                     }
                     |> Dialogue
               }
-            , Cmd.none
+            ,  playSound ("/music/" ++ character.name ++ ".mp3") False
             )
 
         Step time ->
-            ( step model, Cmd.none )
+            ( step model,
+            case model.fadeOutStart
+                (Just a, Just (character, startStep)) ->
+                    if model.stepCount - startStep > fadeDuration then
+                        Cmd.none
+                    else
+                        "/music/" ++ character ++ ".mp3" |> StopSound
+                _ -> Cmd.none
+            )
 
         KeyMsg keyMsg ->
             ( { model | pressedKeys = Keyboard.update keyMsg model.pressedKeys }, Cmd.none )
@@ -239,7 +247,7 @@ step model =
 
 keysDown : List Key -> Model -> Bool
 keysDown keys model =
-    keys |> List.any (\a -> List.member a model.pressedKeys) |> Debug.log "keysDown"
+    keys |> List.any (\a -> List.member a model.pressedKeys)
 
 
 type alias Point =
@@ -280,7 +288,7 @@ timeElapsed model =
             0
 
         Dialogue dialogueData ->
-            model.stepCount - dialogueData.dialogueStart |> Debug.log "Dialogue Steps Elapsed"
+            model.stepCount - dialogueData.dialogueStart
 
 
 stepsPerChar = 2
@@ -360,7 +368,7 @@ view model =
                     Html.img
                         ( buttonEvent model a
                         ++ [ Html.Attributes.class a.name
-                        , Html.Attributes.src ("/public/images/" ++ a.name ++ ".png")
+                        , Html.Attributes.src ("/images/" ++ a.name ++ ".png")
                         , style "left" (px a.pos.x)
                         , style "top" (px a.pos.y)
                         , style "position" "fixed"
@@ -380,7 +388,7 @@ view model =
               else
                   [Html.img
                     [ Html.Events.onMouseDown (DialogueNext)
-                    , Html.Attributes.src ("/public/images/buttonNext.png")
+                    , Html.Attributes.src ("/images/buttonNext.png")
                     , style "position" "absolute"
                     , style "top" "256px"
                     , style "left" "1550px"
@@ -398,7 +406,7 @@ view model =
                     , style "left" (px 68)
                     , style "top" (px 699)
                     ]
-                ( [ Html.img [Html.Attributes.src "/public/images/dialoguebox.png"] [] ]
+                ( [ Html.img [Html.Attributes.src "/images/dialoguebox.png"] [] ]
                 ++ [div
                     [ style "position" "absolute"
                     , style "top" "50%"
@@ -414,7 +422,7 @@ view model =
                 )]
     in
     div [ style "position" "fixed" ]
-        ([ Html.img [Html.Attributes.src "/public/images/0campfire.png"] [] ]
+        ([ Html.img [Html.Attributes.src "/images/0campfire.png"] [] ]
             ++ visibleCharacterHtml
             ++ dialogueBoxHtml
         )
