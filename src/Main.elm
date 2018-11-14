@@ -12,18 +12,6 @@ import Set exposing (Set)
 
 -- MODEL
 
-
--- type alias Model =
---     { count : Int
---     , pressedKeys : List Key
---     , visiblePlayers : Set String
---     , currentChar : String
---     , dialogueShow : Bool
---     , dialogue : List String
---     , stepCount : Int
---     }
-
--- "Make impossible states impossible" - Richard Feldman
 type alias Model =
     { count : Int
     , pressedKeys : List Key
@@ -175,8 +163,19 @@ type alias PartyMember =
 
 characters : List PartyMember
 characters =
-    [ { name = "Os", pos = { x = 14, y = 364 }, text = "Test string for Os! Test string for Os! Test string for Os! Test string for Os! Test string for Os!\nA second line of test string for Os! Wow! Incredible!" }
-    , { name = "Maela", pos = { x = 14, y = 264 }, text = "Test string for Maela!" }
+    [ {name = "Strawberry", pos = {x = 77 , y = 25 }, text = ""}
+    , {name = "Valtyra", pos = {x = 912 , y = 177 }, text = ""}
+    , {name = "Maela", pos = {x = 551 , y = 31 }, text = "The first thing on Maela’s list was to marry Valtyra. That being done, she set herself to the task of becoming infamous. Sure, she had been the most wanted person on the planet, but that was thinking too small. She wanted even the gods to notice her!\nFortunately for her, they noticed without her actually doing anything. One minute there she was, and the next there were a bunch of gods descending upon her, demanding her wisdom. How had she survived in the mortal world, with a mortal form, for so long, they wondered? They were on the run from a creature of ultimate darkness, a genocider of the gods of the Immortal Realms, and needed to live in the mortal world for the foreseeable future. Maela shrugged. Possess mortals, she guessed?\nThe gods went ahead and did that, and Maela marked that off her list of things to do. She went ahead and had a house built in the Realm of Eternal Fire, assuming that Valtyra would agree to move there when her ventures with the Holy Order inevitably failed. They did, and the two of them lived happily forever after in Hell, except for those times that Valtyra’s fallen sister visited."}
+    , {name = "Newyn", pos = {x = 1294 , y = 126 }, text = ""}
+    , {name = "Arnulf", pos = {x = 226 , y = 355 }, text = ""}
+    , {name = "Luxara", pos = {x = 1542 , y = 108 }, text = ""}
+    , {name = "Zayn", pos = {x = 0 , y = 315 }, text = ""}
+    , {name = "Knifery", pos = {x = 55 , y = 510 }, text = ""}
+    , {name = "Aveline", pos = {x = 360 , y = 554 }, text = ""}
+    , {name = "Yannick", pos = {x = 1276 , y = 533 }, text = ""}
+    , { name = "Os", pos = { x = 808, y = 308 }, text = "Test string for Os! Test string for Os! Test string for Os! Test string for Os! Test string for Os!\nA second line of test string for Os! Wow! Incredible!" }
+    , {name = "Mask", pos = {x = 1048 , y = 283 }, text = ""}
+    , {name = "Samara", pos = {x = 586 , y = 463 }, text = ""}
     ]
 
 
@@ -268,6 +267,9 @@ view model =
                 (\a ->
                     button
                         [ onClick (SetDialogue a)
+                        , Html.Attributes.class a.name
+                        -- , Html.Attributes.type_ "submit"
+                        , style "src" "11os.png"
                         , style "left" (px a.pos.x)
                         , style "top" (px a.pos.y)
                         , style "position" "relative"
@@ -288,6 +290,7 @@ view model =
     div [ style "position" "relative" ]
         (visibleCharacterHtml
             ++ dialogueBoxHtml
+            ++ [ Html.img [Html.Attributes.src "/public/images/11os.png"] [] ]
         )
 
 
