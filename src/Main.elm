@@ -35,7 +35,7 @@ initialModel : Model
 initialModel =
     { count = 0
     , pressedKeys = []
-    , visiblePlayers = Set.fromList [ "Os", "Maela" ]
+    , visiblePlayers = Set.fromList [ "Strawberry", "Valtyra", "Maela", "Newyn", "Arnulf", "Luxara", "Zayn", "Knifery", "Aveline", "Yannick", "Os", "Mask", "Samara" ]
     , dialogueState = NoDialogue
     , stepCount = 0
     , fadeOutStart = Nothing
@@ -268,11 +268,9 @@ view model =
                     button
                         [ onClick (SetDialogue a)
                         , Html.Attributes.class a.name
-                        -- , Html.Attributes.type_ "submit"
-                        , style "src" "11os.png"
                         , style "left" (px a.pos.x)
                         , style "top" (px a.pos.y)
-                        , style "position" "relative"
+                        , style "position" "fixed"
                         , buttonDisable model
                         , buttonOpacity model a.name
                         ]
@@ -285,12 +283,28 @@ view model =
                 []
 
             else
-                [ textToHtml (getCurrentLine model) (timeElapsed model) ]
+                [div
+                    [ style "position" "fixed"
+                    , style "left" (px 68)
+                    , style "top" (px 699)
+                    ]
+                ( [ Html.img [Html.Attributes.src "/public/images/dialoguebox.png"] [] ]
+                ++ [div
+                    [ style "position" "absolute"
+                    , style "top" "60px"
+                    , style "left" "80px"
+                    , style "width" "1620px"
+                    , style "font-size" "300%"
+                    --, style "transform" "translate(-50%, -50%)"
+                    ]
+                        [textToHtml (getCurrentLine model) (timeElapsed model) ]
+                    ]
+                )]
     in
-    div [ style "position" "relative" ]
-        (visibleCharacterHtml
+    div [ style "position" "fixed" ]
+        ([ Html.img [Html.Attributes.src "/public/images/0campfire.png"] [] ]
+            ++ visibleCharacterHtml
             ++ dialogueBoxHtml
-            ++ [ Html.img [Html.Attributes.src "/public/images/11os.png"] [] ]
         )
 
 
