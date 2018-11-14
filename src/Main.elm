@@ -8,7 +8,6 @@ import Html.Events exposing (onClick)
 import Keyboard exposing (Key(..))
 import Set exposing (Set)
 import Json.Encode as Enc exposing (object)
-import Json.Decode as Dec exposing (andThen, field)
 
 
 port portOut : Enc.Value -> Cmd msg
@@ -17,6 +16,7 @@ port portOut : Enc.Value -> Cmd msg
 type PortOutMsg
     = PlaySound { soundName : String, loop : Bool }
     | StopSound { soundName : String }
+
 
 encodePortOutMsg : PortOutMsg -> Enc.Value
 encodePortOutMsg a =
@@ -51,9 +51,9 @@ encodeRecord_soundName_String_loop_Bool_ a =
         ]
 
 
-playSound : String -> Cmd msg
-playSound soundName =
-    Ports.PlaySound { soundName = soundName, loop = False }
+playSound : String -> Bool -> Cmd msg
+playSound soundName loop =
+    Ports.PlaySound { soundName = soundName, loop = loop }
         |> Json.encodePortOutMsg
         |> Ports.portOut
 
