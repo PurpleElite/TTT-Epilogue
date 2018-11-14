@@ -1,4 +1,4 @@
-module Main exposing (main)
+port module Main exposing (main)
 
 import Browser
 import Browser.Events exposing (onAnimationFrameDelta)
@@ -49,6 +49,7 @@ encodeRecord_soundName_String_loop_Bool_ a =
         [ ( "soundName", Enc.string a.soundName )
         , ( "loop", Enc.bool a.loop )
         ]
+
 
 playSound : String -> Cmd msg
 playSound soundName =
