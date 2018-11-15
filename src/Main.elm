@@ -124,12 +124,12 @@ update msg model =
 
         Step time ->
             ( step model,
-            case model.fadeOutStart
-                (Just a, Just (character, startStep)) ->
+            case model.fadeOutStart of
+                Just (character, startStep) ->
                     if model.stepCount - startStep > fadeDuration then
                         Cmd.none
                     else
-                        "/music/" ++ character ++ ".mp3" |> StopSound
+                        stopSound ("/music/" ++ character ++ ".mp3")
                 _ -> Cmd.none
             )
 
