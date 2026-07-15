@@ -17,6 +17,8 @@ type PortOutMsg
     = PlaySound { soundName : String, loop : Bool }
     | StopSound { soundName : String }
 
+domain : String 
+domain = "/public/"
 
 encodePortOutMsg : PortOutMsg -> Enc.Value
 encodePortOutMsg a =
@@ -125,7 +127,7 @@ update msg model =
                     }
                         |> Dialogue
               }
-            , playSound ("/music/" ++ character.name ++ ".mp3") False
+            , playSound (domain ++ "music/" ++ character.name ++ ".mp3") False
             )
 
         Step time ->
@@ -136,7 +138,7 @@ update msg model =
                         Cmd.none
 
                     else
-                        stopSound ("/music/" ++ character ++ ".mp3")
+                        stopSound (domain ++ "music/" ++ character ++ ".mp3")
 
                 _ ->
                     Cmd.none
@@ -394,7 +396,7 @@ view model =
                     Html.img
                         (buttonEvent model a
                             ++ [ Html.Attributes.class a.name
-                               , Html.Attributes.src ("/images/" ++ a.name ++ ".png")
+                               , Html.Attributes.src (domain ++ "images/" ++ a.name ++ ".png")
                                , style "left" (px a.pos.x)
                                , style "top" (px a.pos.y)
                                , style "position" "fixed"
@@ -416,7 +418,7 @@ view model =
             else
                 [ Html.img
                     [ Html.Events.onMouseDown DialogueNext
-                    , Html.Attributes.src "/images/buttonNext.png"
+                    , Html.Attributes.src (domain ++ "images/buttonNext.png")
                     , style "position" "absolute"
                     , style "top" "256px"
                     , style "left" "1550px"
@@ -434,7 +436,7 @@ view model =
                     , style "left" (px 68)
                     , style "top" (px 699)
                     ]
-                    ([ Html.img [ Html.Attributes.src "/images/dialoguebox.png" ] [] ]
+                    ([ Html.img [ Html.Attributes.src (domain ++ "images/dialoguebox.png") ] [] ]
                         ++ [ div
                                 [ style "position" "absolute"
                                 , style "top" "50%"
@@ -454,7 +456,7 @@ view model =
         , style "left" (px 0)
         , style "top" (px 0)
         ]
-        ([ Html.img [ Html.Attributes.src "/images/0campfire.png" ] [] ]
+        ([ Html.img [ Html.Attributes.src (domain ++ "images/0campfire.png") ] [] ]
             ++ visibleCharacterHtml
             ++ dialogueBoxHtml
         )
