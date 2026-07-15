@@ -14,7 +14,7 @@ app.ports.portOut.subscribe( ( message ) => {
         case "PlaySound":
         {
             let messageBody = message.A1;
-            var sound = new Audio("../" + messageBody.soundName);
+            var sound = new Audio(messageBody.soundName);
             sound.currentTime = 0;
             sound.loop = messageBody.loop;
             sound.play();
