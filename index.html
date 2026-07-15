@@ -7199,6 +7199,37 @@ _Platform_export({'Main':{'init':$author$project$Main$main(
 	$elm$json$Json$Decode$succeed(_Utils_Tuple0))(0)}});}(this));
 
   var app = Elm.Main.init({ node: document.getElementById("elm") });
+
+  var soundsPlaying = [];
+
+  app.ports.portOut.subscribe(function (message) {
+    var messageType = message.Constructor;
+    switch (messageType) {
+      case "PlaySound":
+        {
+          var messageBody = message.A1;
+          var sound = new Audio(messageBody.soundName);
+          sound.currentTime = 0;
+          sound.loop = messageBody.loop;
+          sound.play();
+          soundsPlaying.push({ soundName: messageBody.soundName, sound: sound });
+          break;
+        }
+      case "StopSound":
+        {
+          var messageBody = message.A1;
+          for (var i = soundsPlaying.length - 1; i >= 0; i--) {
+            if (soundsPlaying[i].soundName === messageBody.soundName) {
+              soundsPlaying[i].sound.pause();
+            }
+          }
+          break;
+        }
+      default:
+        console.log("Message type \"" + messageType + "\" was not handled.");
+        break;
+    }
+  });
 }
 catch (e)
 {
