@@ -5700,6 +5700,7 @@ var $author$project$Main$subscriptions = function (model) {
 var $author$project$Main$Dialogue = function (a) {
 	return {$: 'Dialogue', a: a};
 };
+var $author$project$Main$domain = '/public/';
 var $author$project$Main$fadeDuration = 100;
 var $author$project$Main$PlaySound = function (a) {
 	return {$: 'PlaySound', a: a};
@@ -6780,7 +6781,7 @@ var $author$project$Main$update = F2(
 									dialogueStart: model.stepCount
 								})
 						}),
-					A2($author$project$Main$playSound, '/music/' + (character.name + '.mp3'), false));
+					A2($author$project$Main$playSound, $author$project$Main$domain + ('music/' + (character.name + '.mp3')), false));
 			case 'Step':
 				var time = msg.a;
 				return _Utils_Tuple2(
@@ -6791,7 +6792,7 @@ var $author$project$Main$update = F2(
 							var _v2 = _v1.a;
 							var character = _v2.a;
 							var startStep = _v2.b;
-							return (_Utils_cmp(model.stepCount - startStep, $author$project$Main$fadeDuration) > 0) ? $elm$core$Platform$Cmd$none : $author$project$Main$stopSound('/music/' + (character + '.mp3'));
+							return (_Utils_cmp(model.stepCount - startStep, $author$project$Main$fadeDuration) > 0) ? $elm$core$Platform$Cmd$none : $author$project$Main$stopSound($author$project$Main$domain + ('music/' + (character + '.mp3')));
 						} else {
 							return $elm$core$Platform$Cmd$none;
 						}
@@ -7064,7 +7065,7 @@ var $author$project$Main$view = function (model) {
 					_List_fromArray(
 						[
 							$elm$html$Html$Attributes$class(a.name),
-							$elm$html$Html$Attributes$src('/images/' + (a.name + '.png')),
+							$elm$html$Html$Attributes$src($author$project$Main$domain + ('images/' + (a.name + '.png'))),
 							A2(
 							$elm$html$Html$Attributes$style,
 							'left',
@@ -7095,7 +7096,7 @@ var $author$project$Main$view = function (model) {
 				_List_fromArray(
 					[
 						$elm$html$Html$Events$onMouseDown($author$project$Main$DialogueNext),
-						$elm$html$Html$Attributes$src('/images/buttonNext.png'),
+						$elm$html$Html$Attributes$src($author$project$Main$domain + 'images/buttonNext.png'),
 						A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
 						A2($elm$html$Html$Attributes$style, 'top', '256px'),
 						A2($elm$html$Html$Attributes$style, 'left', '1550px')
@@ -7129,7 +7130,7 @@ var $author$project$Main$view = function (model) {
 						$elm$html$Html$img,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$src('/images/dialoguebox.png')
+								$elm$html$Html$Attributes$src($author$project$Main$domain + 'images/dialoguebox.png')
 							]),
 						_List_Nil)
 					]),
@@ -7179,7 +7180,7 @@ var $author$project$Main$view = function (model) {
 					$elm$html$Html$img,
 					_List_fromArray(
 						[
-							$elm$html$Html$Attributes$src('/images/0campfire.png')
+							$elm$html$Html$Attributes$src($author$project$Main$domain + 'images/0campfire.png')
 						]),
 					_List_Nil)
 				]),
