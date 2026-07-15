@@ -18,7 +18,7 @@ type PortOutMsg
     | StopSound { soundName : String }
 
 domain : String 
-domain = "/public/"
+domain = "/TTT-Epilogue/public/"
 
 encodePortOutMsg : PortOutMsg -> Enc.Value
 encodePortOutMsg a =
